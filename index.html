@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>three.js webgl - clipping planes - advanced</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js"></script>
+		<script src="js/GLTFLoader.js"></script>
+		<script src="js/OrbitControls.js"></script>
+		<script src="js/RoomEnvironment.js"></script>
+		<script >
+			let camera, scene, renderer, controls;
+			init();
+			animate();
+			function init() {
+
+				const container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 20 );
+				camera.position.set( 4.2, 2.1, -1.4 );
+
+				scene = new THREE.Scene();
+
+				new THREE.GLTFLoader()
+					.setPath( '' )
+					.load( 'master.glb', function ( gltf ) {
+						scene.add( gltf.scene );
+						
+					} );
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.toneMapping = THREE.ACESFilmicToneMapping;
+				renderer.toneMappingExposure = 1;
+				renderer.outputEncoding = THREE.sRGBEncoding;
+				container.appendChild( renderer.domElement );
+
+				const environment = new THREE.RoomEnvironment();
+				const pmremGenerator = new THREE.PMREMGenerator( renderer );
+
+				scene.background = new THREE.Color( 0xf0f0f0 );
+				scene.environment = pmremGenerator.fromScene( environment ).texture;
+
+				controls = new THREE.OrbitControls( camera, renderer.domElement );
+				controls.enableDamping = true;
+				controls.minDistance = 1;
+				controls.maxDistance = 5;
+				controls.target.set( 0, 0.35, 0 );
+				controls.update();
+
+				window.addEventListener( 'resize', onWindowResize );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				controls.update();
+				render();
+
+			}
+
+			function render() {
+				console.log(camera.position)
+				renderer.render( scene, camera );
+
+			}
+		</script>
+	</body>
+</html>
